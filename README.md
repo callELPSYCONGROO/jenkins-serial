@@ -1,6 +1,7 @@
 # jenkins-serial
 > Jenkins串行队列构建
 
+
 ## 项目说明
 
 * 使用webhook监听Gitlab任意事件，使配置的项目能够在Jenkins中串行构建
@@ -13,13 +14,12 @@
 
 * 只能单机版运行
 
+
 ## 接口说明
 
 ### config
 
 * 新增git项目源码与Jenkins项目之间的映射关系：```POST /config/gitRepositoryAndJobMapping/insert```
-
-* 修改git项目源码与Jenkins项目之间的映射关系：```PUT /config/gitRepositoryAndJobMapping/update```
 
 * 查看当前正在执行的构建：```GET /config/job/executing```
 
