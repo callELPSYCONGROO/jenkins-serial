@@ -56,23 +56,6 @@ public class ConfigServiceImpl implements ConfigService {
 	}
 
 	@Override
-	@Transactional(rollbackFor = Exception.class)
-	public void gitRepositoryAndJobMappingUpdate(ConfigGitRepositoryAndJobCommand command) {
-		Long jenkinsProjectId = command.getJenkinsProjectId();
-		Optional<JenkinsProject> optionalJenkinsProject = jenkinsProjectRepository.findById(jenkinsProjectId);
-		if (!optionalJenkinsProject.isPresent()) {
-			throw BizException.build(Result.ResultEnum.JENKINS_PROJECT_ID_NOT_EXIST, jenkinsProjectId);
-		}
-
-		String pathWithNamespace = command.getPathWithNamespace();
-		String job = command.getJob();
-		modifyRepositoryAndJobMapping(pathWithNamespace, job);
-		log.debug("更新Jenkins项目[{}]", job);
-
-		log.info("更新Git源[{}]与Jenkins项目[{}]关联", pathWithNamespace, job);
-	}
-
-	@Override
 	public CurrentExecutingJobDTO executingJob() {
 		JobExecQueue executingJob = jobExecQueueRepository.findTopByStatusOrderByCreateTimeAsc(StatusEnum.EXECUTING.getCode());
 		if (executingJob == null) {
@@ -109,8 +92,8 @@ public class ConfigServiceImpl implements ConfigService {
 		}
 
 		JenkinsProject jenkinsProject = jenkinsProjectRepository.findByJob(job);
-		if (jenkinsProject != null && Objects.equals(jenkinsProject.getGitRepositoryId(), gitRepository.getId())) {
-			log.warn("[{}]与[{}]映射已存在", pathWithNamespace, job);
+		if (jenkinsProject != null) {
+			log.warn("已存在[{}]与[{}]映射", pathWithNamespace, job);
 			throw BizException.build(Result.ResultEnum.GIT_REPOSITORY_AND_JENKINS_PROJECT_MAPPING_EXIST, pathWithNamespace, job);
 		}
 
@@ -119,5 +102,6 @@ public class ConfigServiceImpl implements ConfigService {
 		jenkinsProject.setJob(job);
 		jenkinsProject.setCreateTime(now);
 		jenkinsProjectRepository.save(jenkinsProject);
+		log.info("创建新映射：Git源[{}]，Jenkins项目[{}]", pathWithNamespace, job);
 	}
 }

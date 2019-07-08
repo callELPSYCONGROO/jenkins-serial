@@ -11,7 +11,5 @@ public interface ConfigService {
 
 	void gitRepositoryAndJobMappingInsert(ConfigGitRepositoryAndJobCommand command);
 
-	void gitRepositoryAndJobMappingUpdate(ConfigGitRepositoryAndJobCommand command);
-
 	CurrentExecutingJobDTO executingJob();
 }

@@ -1,19 +1,23 @@
 package com.sensin.build.jenkinsserial.service.impl;
 
 import com.offbytwo.jenkins.JenkinsServer;
-import com.offbytwo.jenkins.model.Build;
-import com.offbytwo.jenkins.model.BuildResult;
-import com.offbytwo.jenkins.model.BuildWithDetails;
-import com.offbytwo.jenkins.model.JobWithDetails;
+import com.offbytwo.jenkins.model.*;
 import com.sensin.build.jenkinsserial.domain.Result;
 import com.sensin.build.jenkinsserial.exception.BizException;
 import com.sensin.build.jenkinsserial.service.JenkinsService;
 import lombok.extern.slf4j.Slf4j;
+import org.omg.CORBA.UNKNOWN;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author 無痕剑
@@ -24,6 +28,9 @@ import java.io.IOException;
 public class JenkinsServiceImpl implements JenkinsService {
 
 	private final JenkinsServer jenkinsServer;
+
+	@Value("${jenkins.serial.jobRegex}")
+	private String jobRegex;
 
 	@Autowired
 	public JenkinsServiceImpl(JenkinsServer jenkinsServer) {
@@ -63,9 +70,46 @@ public class JenkinsServiceImpl implements JenkinsService {
 			log.error("获取Jenkins项目[{}]构建详情失败，原因：", jobName, e);
 			throw BizException.build(Result.ResultEnum.SYSTEM_ERROR);
 		}
+
 		BuildResult buildResult = buildWithDetails.getResult();
+		if (jobWithDetails.isInQueue() || buildResult == null) {
+			buildResult = BuildResult.UNKNOWN;
+		}
+
 		log.info("Jenkins项目[{}]当前构建状态为[{}]", jobName, buildResult);
 		return buildResult;
+	}
+
+	@Override
+	public List<Job> getBuilding() {
+		// 搜索匹配jobRegex的工程
+		Map<String, Job> jobs;
+		try {
+			jobs = jenkinsServer.getJobs();
+		} catch (IOException e) {
+			log.error("未获取到所有的Job，原因：", e);
+			throw BizException.build(Result.ResultEnum.SYSTEM_ERROR);
+		}
+		if (CollectionUtils.isEmpty(jobs)) {
+			log.info("Jenkins中项目为空");
+			return null;
+		}
+
+		// 正在构建的Job
+		return jobs.values().parallelStream()
+				// 名称匹配正则
+				.filter(job -> job.getName().matches(jobRegex))
+				// 正在构建的项目
+				.filter(job -> {
+					try {
+						JobWithDetails jobWithDetails = job.details();
+						return jobWithDetails.isInQueue() || jobWithDetails.getLastBuild().details().isBuilding();
+					} catch (IOException e) {
+						log.error("获取Jenkins项目[{}]的构建状态时发生异常，原因：", job.getName(), e);
+						return true;
+					}
+				})
+				.collect(Collectors.toList());
 	}
 
 	private JobWithDetails getJobWithDetails(String jobName) {

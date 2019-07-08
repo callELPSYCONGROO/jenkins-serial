@@ -1,6 +1,7 @@
 package com.sensin.build.jenkinsserial.task;
 
 import com.offbytwo.jenkins.model.BuildResult;
+import com.offbytwo.jenkins.model.Job;
 import com.sensin.build.jenkinsserial.domain.Result;
 import com.sensin.build.jenkinsserial.domain.entity.JenkinsProject;
 import com.sensin.build.jenkinsserial.domain.entity.JobExecQueue;
@@ -21,6 +22,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -63,7 +65,7 @@ public class QueueScanningTask {
 		if (executingJob != null) {
 			Optional<JenkinsProject> optionalJenkinsProject = jenkinsProjectRepository.findById(executingJob.getJenkinsProjectId());
 			if (optionalJenkinsProject.isPresent()) {
-				log.info("目前任务[{}]正在执行构建#[{}]",
+				log.info("目前任务[{}]正在执行构建[#{}]",
 						optionalJenkinsProject.get().getJob(),
 						executingJob.getBuildNumber());
 			} else {
@@ -71,6 +73,12 @@ public class QueueScanningTask {
 						executingJob.getId(),
 						executingJob.getJenkinsProjectId());
 			}
+			return;
+		}
+
+		List<Job> jobList = jenkinsService.getBuilding();
+		if (!CollectionUtils.isEmpty(jobList)) {
+			log.info("有未经本系统的构建正在触发");
 			return;
 		}
 
@@ -152,6 +160,11 @@ public class QueueScanningTask {
 				continue;
 			}
 
+			if (buildResult == null) {
+				log.warn("未获取到JobExecQueue.id=[{}]的构建结果", jobExecQueue.getId());
+				continue;
+			}
+
 			/*
 			 * 可以任务这里查询到的任务至少是已经启动构建了的，所以不存在NOT_BUILT；
 			 * SUCCESS表示成功；
@@ -201,6 +214,10 @@ public class QueueScanningTask {
 				jobExecQueue.setEndExecTime(now);
 				update = true;
 				log.info("Jenkins项目[{}]构建编号[{}]放弃构建", jobName, buildNumber);
+				break;
+			case UNKNOWN:
+				update = false;
+				log.debug("Jenkins项目[{}]构建编号[{}]构建结果未知", jobName, buildNumber);
 				break;
 			default:
 				throw BizException.build(Result.ResultEnum.SYSTEM_ERROR);

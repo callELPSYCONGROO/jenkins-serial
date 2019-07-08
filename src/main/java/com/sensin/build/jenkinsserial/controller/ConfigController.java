@@ -30,12 +30,6 @@ public class ConfigController {
 		return Result.success();
 	}
 
-	@PutMapping("/gitRepositoryAndJobMapping/update")
-	public Result gitRepositoryAndJobMappingUpdate(@Validated(UpdateGroup.class) @RequestBody ConfigGitRepositoryAndJobCommand command) {
-		configService.gitRepositoryAndJobMappingUpdate(command);
-		return Result.success();
-	}
-
 	@GetMapping("/job/executing")
 	public Result executingJob() {
 		return Result.success(configService.executingJob());

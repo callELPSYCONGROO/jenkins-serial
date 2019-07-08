@@ -1,6 +1,10 @@
 package com.sensin.build.jenkinsserial.service;
 
 import com.offbytwo.jenkins.model.BuildResult;
+import com.offbytwo.jenkins.model.BuildWithDetails;
+import com.offbytwo.jenkins.model.Job;
+
+import java.util.List;
 
 /**
  * @author 無痕剑
@@ -21,4 +25,10 @@ public interface JenkinsService {
 	 * @param buildNumber 构建编号
 	 */
 	BuildResult getBuildResult(String jobName, int buildNumber);
+
+	/**
+	 * 查询匹配jobRegex的Jenkins项目是否有正在构建的
+	 * @return 正在构建的Jenkins项目集合
+	 */
+	List<Job> getBuilding();
 }

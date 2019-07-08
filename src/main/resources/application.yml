@@ -19,6 +19,10 @@ jenkins:
   username: ${JENKINS_USERNAME:root}
   password: ${JENKINS_PASSWORD:root}
   url: ${JENKINS_URL:http://www.jenkins.com}
+  serial:
+    # 需要串行构建的Jenkins工程名称的正则表达式
+    jobRegex: ${JENKINS_SERIAL_JOB_REGEX:.+}
+
 logging:
   level:
     # 生产环境建议设置为info级别

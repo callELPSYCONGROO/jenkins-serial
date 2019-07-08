@@ -31,10 +31,6 @@ public class BizException extends RuntimeException {
 		return new BizException(resultEnum.getCode(), resultEnum.getMessage(), null);
 	}
 
-	public static BizException build(Result.ResultEnum resultEnum, Object data) {
-		return new BizException(resultEnum.getCode(), resultEnum.getMessage(), data);
-	}
-
 	public static BizException build(Result.ResultEnum resultEnum, Object... strings) {
 		return new BizException(resultEnum.getCode(), MessageFormat.format(resultEnum.getMessage(), strings), null);
 	}

@@ -72,7 +72,7 @@ public class Result {
 		JENKINS_PROJECT_NOT_CONFIG(1004, "Jenkins项目[{0}]未配置"),
 		GIT_REPOSITORY_NOT_MATCH_JENKINS_PROJECT(1004, "源项目[{0}]与Jenkins项目[{1}]不匹配"),
 		JENKINS_PROJECT_BUILD_NUMBER_NOT_EXIST(1005, "Jenkins项目[{0}]构建编号[{1}]不存在"),
-		GIT_REPOSITORY_AND_JENKINS_PROJECT_MAPPING_EXIST(1006, "Git源[{0}]与Jenkins工程[{1}]映射已存在"),
+		GIT_REPOSITORY_AND_JENKINS_PROJECT_MAPPING_EXIST(1006, "已存在Git源[{0}]与Jenkins工程[{1}]映射"),
 		JENKINS_PROJECT_ID_NOT_EXIST(1007, "Jenkins工程ID[{0}]不存在"),
 		GIT_REPOSITORY_ID_NOT_EXIST(1008, "Git源工程ID[{0}]不存在"),
 
